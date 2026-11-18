@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrega de Cartão Malote</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={darkMode:"class"}</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>(function(){try{var t=localStorage.getItem("temaPainel")||"azul";document.documentElement.setAttribute("data-tema",t);if(["azulclaro","claro"].indexOf(t)>=0)document.documentElement.classList.remove("dark");}catch(e){}})();</script>
+<style>
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:rgba(150,150,150,.5);border-radius:5px}
+.tabela-dados th{position:sticky;top:0}.tabela-dados th[data-col-key]{position:sticky}.col-resizer{position:absolute;z-index:35;top:0;right:-3px;width:7px;height:100%;cursor:col-resize;user-select:none}.col-resizer:hover,.col-resizer.ativo{background:var(--t-accent);opacity:.75}.tabela-dados th,.tabela-dados td{box-sizing:border-box}.tabela-dados td.col-acoes-fixa>div{flex-wrap:nowrap!important;white-space:nowrap}.btn-filtro-th{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;border:1px solid #94a3b8;background:#fff;color:#475569;cursor:pointer}
+.dark .btn-filtro-th{background:#0f172a;border-color:#475569;color:#cbd5e1}.btn-filtro-th.ativo{background:#3b82f6;color:#fff;border-color:#3b82f6}
+#caixaFiltro{position:fixed;z-index:60;width:min(360px,calc(100vw - 16px));height:400px;resize:both;overflow:auto}
+.filtro-busca-input{width:100%;padding:8px 12px 8px 34px;font-size:13px;border-radius:10px;border:1px solid #cbd5e1;background:#f8fafc}
+.dark .filtro-busca-input{background:#0f172a;border-color:#334155;color:#e2e8f0}
+.rodape-contagem{margin-top:5px;padding:4px 9px;border-radius:8px;font-size:11px;font-weight:600;border:1px solid transparent}
+.rodape-neutro{background:#f1f5f9;color:#64748b}.dark .rodape-neutro{background:#0f172a;color:#94a3b8}
+.rodape-ok{background:#dcfce7;color:#15803d}.dark .rodape-ok{background:rgba(22,163,74,.15);color:#4ade80}
+.rodape-erro{background:#fee2e2;color:#b91c1c}.dark .rodape-erro{background:rgba(220,38,38,.15);color:#f87171}
+.rodape-alerta{background:#fef3c7;color:#b45309}.dark .rodape-alerta{background:rgba(245,158,11,.15);color:#fbbf24}
+:root,html[data-tema=azul]{color-scheme:dark;--t-bg:#071a35;--t-panel:#0d2b50;--t-top:#0b2b55;--t-side1:#08264c;--t-side2:#061a36;--t-deep:#06172d;--t-line:#245184;--t-hover:#174477;--t-active:#1d4f86;--t-accent:#60a5fa;--t-accent2:#93c5fd;--t-text:#e6f1ff;--t-muted:#a9c8ec;--t-nav:#dbeafe;--t-navhi:#fff}
+html[data-tema=azulclaro]{color-scheme:light;--t-bg:#e5eef5;--t-panel:#fcfdfd;--t-top:#dae7f1;--t-side1:#e1ecf4;--t-side2:#d3e3ee;--t-deep:#d6e5f0;--t-line:#b5cad9;--t-hover:#cfe0ed;--t-active:#add1eb;--t-accent:#1973b3;--t-accent2:#268ed9;--t-text:#11212c;--t-muted:#445a6a;--t-nav:#223c4f;--t-navhi:#091620}
+html[data-tema=claro]{color-scheme:light;--t-bg:#f1f5f9;--t-panel:#fff;--t-top:#fff;--t-side1:#f8fafc;--t-side2:#f1f5f9;--t-deep:#e2e8f0;--t-line:#c0c6ce;--t-hover:#e2e8f0;--t-active:#dbeafe;--t-accent:#1959b3;--t-accent2:#2671d9;--t-text:#111c2c;--t-muted:#44546a;--t-nav:#22344f;--t-navhi:#091320}
+html[data-tema=preto]{color-scheme:dark;--t-bg:#0a0a0b;--t-panel:#18191b;--t-top:#161618;--t-side1:#111113;--t-side2:#070708;--t-deep:#050505;--t-line:#35373b;--t-hover:#292a2e;--t-active:#35373b;--t-accent:#6896f3;--t-accent2:#94b6f9;--t-text:#e8edf7;--t-muted:#acbbd7;--t-nav:#d1dbf0;--t-navhi:#fff}
+html[data-tema=verde]{color-scheme:dark;--t-bg:#0b281a;--t-panel:#123f29;--t-top:#113b26;--t-side1:#0f3321;--t-side2:#0a2417;--t-deep:#092014;--t-line:#286747;--t-hover:#1a5b3b;--t-active:#206f47;--t-accent:#68f3ad;--t-accent2:#94f9c7;--t-text:#e8f7f0;--t-muted:#acd7c2;--t-nav:#d1f0e0;--t-navhi:#fff}
+#seletorTema{display:flex;gap:7px;padding:5px 9px;border-radius:999px;background:var(--t-deep);border:1px solid var(--t-line)}
+#seletorTema button{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.55);cursor:pointer;padding:0}
+#seletorTema button.ativo{border-color:var(--t-text);box-shadow:0 0 0 3px var(--t-accent)}
+body{background:var(--t-bg)!important;color:var(--t-text)!important}
+#topoFixo{margin-left:250px;width:calc(100% - 250px);background:var(--t-top)}
+main{margin-left:250px!important;width:calc(100% - 250px)!important;background:var(--t-bg)}
+.menu-lateral{position:fixed;z-index:55;left:0;top:0;bottom:0;width:250px;overflow-y:auto;background:linear-gradient(180deg,var(--t-side1),var(--t-side2));border-right:1px solid var(--t-line)}
+.menu-topo{min-height:70px;display:flex;align-items:center;justify-content:space-between;padding:14px;border-bottom:1px solid var(--t-line);margin-bottom:12px;color:var(--t-navhi)}
+.menu-marca{display:flex;align-items:center;gap:10px;font-weight:800;font-size:12px}.menu-marca i{font-size:20px;color:var(--t-accent)}
+.btn-menu-toggle{color:var(--t-nav);background:var(--t-hover);border:1px solid var(--t-line);border-radius:9px;width:34px;height:34px;cursor:pointer}
+.menu-lateral .tab-btn{border:1px solid transparent!important;border-radius:11px!important;color:var(--t-nav)!important;background:transparent!important}
+.menu-lateral .tab-btn:hover{background:var(--t-hover)!important;color:var(--t-navhi)!important}
+.menu-lateral .tab-btn.ativo{background:var(--t-active)!important;border-color:var(--t-accent)!important;color:var(--t-navhi)!important;box-shadow:inset 3px 0 var(--t-accent2)}
+body.menu-recolhido .menu-lateral{width:76px}body.menu-recolhido #topoFixo{margin-left:76px;width:calc(100% - 76px)}body.menu-recolhido main{margin-left:76px!important;width:calc(100% - 76px)!important}
+body.menu-recolhido .menu-texto,body.menu-recolhido .menu-lateral .tab-btn span{display:none!important}
+.bg-white,.dark .bg-white,.dark .bg-slate-800{background-color:var(--t-panel)!important}
+.border-slate-200,.dark .border-slate-700{border-color:var(--t-line)!important}
+.text-slate-500,.dark .text-slate-400{color:var(--t-muted)!important}
+.tabela-dados{border-collapse:separate!important;border-spacing:0!important}
+.tabela-dados th,.tabela-dados td{padding:5px 7px!important;font-size:11px!important}
+.tabela-dados thead th{border-right:2px solid var(--t-accent)!important;background:var(--t-hover)!important;color:var(--t-text)!important}
+.tabela-dados tbody td{border-bottom:1px solid rgba(148,163,184,.22)!important}
+.tabela-dados th.col-select-fixa,.tabela-dados td.col-select-fixa{position:sticky!important;left:0;z-index:30}
+.tabela-dados th.col-select-fixa{z-index:40;background:var(--t-hover)!important}
+.tabela-dados td.col-select-fixa{z-index:20;background:var(--t-panel)!important;box-shadow:2px 0 4px rgba(15,23,42,.18)}
+.tabela-dados th.col-programa-fixa,.tabela-dados td.col-programa-fixa{position:sticky!important;left:44px;background:var(--t-panel)!important;box-shadow:2px 0 4px rgba(15,23,42,.14)}
+.tabela-dados th.col-programa-fixa{z-index:35;background:var(--t-hover)!important}
+.tabela-dados td.col-programa-fixa{z-index:18}
+.tabela-dados th.col-acoes-fixa,.tabela-dados td.col-acoes-fixa{position:sticky!important;right:0}
+.tabela-dados th.col-acoes-fixa{z-index:40;background:var(--t-hover)!important}
+.tabela-dados td.col-acoes-fixa{z-index:20;background:var(--t-panel)!important;border-left:1px solid var(--t-line);box-shadow:-2px 0 4px rgba(15,23,42,.12)}
+.btn-acao{width:26px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid transparent;font-size:12px}
+  .status-backup{display:inline-flex;align-items:center;white-space:nowrap;border-radius:4px;padding:2px 4px;font-size:9px;line-height:12px;font-weight:700}
+.btn-acao:hover{background:var(--t-hover)}
+.tabela-dados input[type=checkbox]{appearance:none;width:19px;height:19px;border:2px solid #60a5fa;border-radius:5px;background:transparent;cursor:pointer;position:relative;vertical-align:middle}
+.tabela-dados input[type=checkbox]:checked{background:#2563eb}
+.tabela-dados input[type=checkbox]:checked::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.campo-edicao{width:100%;padding:8px 10px;font-size:13px;border-radius:10px;color:var(--t-text);background:var(--t-bg);border:1px solid var(--t-line)}
+.campo-edicao:focus{outline:none;border-color:var(--t-accent)}
+/* ===== Folha de impressão ===== */
+#areaFolhas{overflow-x:auto;padding:4px}
+.folha{position:relative;width:281mm;margin:0 auto 18px;padding:0;background:#fff;color:#000;font-family:Calibri,Carlito,"Segoe UI",Arial,sans-serif;box-shadow:0 2px 14px rgba(0,0,0,.45);break-after:page;page-break-after:always}
+.folha:last-child{break-after:auto;page-break-after:auto}
+.folha-topo{position:relative;display:flex;align-items:center;min-height:16mm;padding:1mm 2mm}
+.folha-orgao{font-family:"Arial Narrow",Arial,sans-serif;font-weight:700;font-size:9pt;line-height:1.55;letter-spacing:-.1px}
+.folha-logo{position:absolute;right:2mm;left:auto;top:50%;transform:translateY(-50%);height:13.5mm;text-align:right}
+.folha-logo img{height:100%;width:auto;display:block}
+.folha-tabela{width:100%;border-collapse:collapse;table-layout:fixed}
+.folha-tabela th,.folha-tabela td{border:1px solid #000;padding:0 1.2mm;color:#000}
+.folha-tabela thead{display:table-header-group}
+.folha-tabela th{background:#e2efda!important;font-family:"Arial Narrow",Arial,sans-serif;font-weight:700;font-size:9pt;height:8.5mm;min-height:8.5mm;text-align:center;vertical-align:middle;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.folha-tabela td{height:10mm;min-height:10mm;font-family:"Arial Narrow",Arial,sans-serif;font-size:9pt;text-align:center;overflow:visible;white-space:normal;overflow-wrap:anywhere;word-break:break-word;vertical-align:bottom;line-height:1.2}
+.folha-tabela td.esq{text-align:left;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+.folha-tabela tbody td:nth-child(1),.folha-tabela tbody td:nth-child(2),.folha-tabela tbody td:nth-child(4),.folha-tabela tbody td:nth-child(7),.folha-tabela tbody td:nth-child(8){text-align:center}
+.folha-tabela tbody td:nth-child(3),.folha-tabela tbody td:nth-child(5),.folha-tabela tbody td:nth-child(6){text-align:left}
+.folha-tabela td,.folha-tabela th{padding-top:1.2mm;padding-bottom:1.2mm}
+.folha-tabela td:has(br),.folha-tabela td[style*="white-space"]{height:auto;min-height:10mm}
+.folha-tabela tr{break-inside:avoid;page-break-inside:avoid}
+.folha-rodape{break-inside:avoid;page-break-inside:avoid;padding:0 0 0 4.5mm}
+.folha-rodape p{margin:0;font-size:10pt;line-height:1.1}
+.folha-rodape .p1{margin-top:12mm}
+.folha-rodape .p2{margin-top:3.6mm}
+.folha-rodape .data{margin-top:14mm;font-size:12.5pt;white-space:pre}
+.folha-rodape .linha{margin-top:14mm;width:75mm;border-top:1px solid #000;height:0}
+.folha-rodape .assin{margin-top:7mm;font-size:12.5pt;margin-bottom:6mm}
+.folha-vazia{padding:40px;text-align:center}
+@page{size:A4 landscape;margin:8mm}
+@media print{
+html,body{background:#fff!important;color:#000!important}
+#topoFixo,.menu-lateral,.no-print,#modalEdicao,#caixaFiltro,#fiAviso,#painel-folhaimpressao>*:not(#areaFolhas){display:none!important}
+main{margin:0!important;width:100%!important;padding:0!important;background:#fff!important;overflow:visible!important}
+#painel-folhaimpressao{margin:0!important}
+#areaFolhas{overflow:visible!important;padding:0!important}
+.folha{width:100%!important;margin:0!important;box-shadow:none!important}
+body{min-height:0!important;display:block!important}
+}
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<div id="topoFixo" class="sticky top-0 z-40 shadow-sm">
+<header class="border-b px-4 py-3 flex flex-wrap gap-3 justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="bg-lime-600 p-2.5 rounded-xl text-white"><i class="fa-solid fa-truck-fast text-xl"></i></div>
+<div><h1 class="text-lg font-bold">Entrega de Cartão Malote</h1>
+<p class="text-xs opacity-70">Coletar cartões · Portador no Retorno 439 · Escola pelo CPF · Backup</p></div>
+</div>
+<div class="flex items-center gap-3 ml-auto flex-wrap">
+<div id="seletorTema">
+<button type="button" data-tema="azul" style="background:#1d4f86" onclick="aplicarTema('azul')"></button>
+<button type="button" data-tema="azulclaro" style="background:#7dd3fc" onclick="aplicarTema('azulclaro')"></button>
+<button type="button" data-tema="claro" style="background:#fff" onclick="aplicarTema('claro')"></button>
+<button type="button" data-tema="verde" style="background:#16a34a" onclick="aplicarTema('verde')"></button>
+<button type="button" data-tema="preto" style="background:#0a0a0a" onclick="aplicarTema('preto')"></button>
+</div>
+<button type="button" onclick="limparTodosFiltros()" class="bg-slate-600 hover:bg-slate-500 text-white px-3 py-2 rounded-xl text-sm font-bold"><i class="fa-solid fa-filter-circle-xmark mr-1"></i>Limpar filtros</button>
+</div>
+</header></div>
+
+<aside class="menu-lateral">
+<div class="menu-topo">
+<div class="menu-marca"><i class="fa-solid fa-layer-group"></i><span class="menu-texto">MENU</span></div>
+<button class="btn-menu-toggle" onclick="toggleMenu()"><i id="iconeMenu" class="fa-solid fa-angles-left"></i></button>
+</div>
+<nav class="flex flex-col gap-2 px-3 pb-4">
+<button id="aba-coletar" onclick="mudarAba('coletar')" class="tab-btn w-full text-left px-4 py-3 text-sm font-semibold rounded-xl flex items-center gap-3"><i class="fa-solid fa-keyboard text-amber-400"></i><span>Coletar Cartões</span></button>
+<button id="aba-entregacartao" onclick="mudarAba('entregacartao')" class="tab-btn w-full text-left px-4 py-3 text-sm font-semibold rounded-xl flex items-center gap-3"><i class="fa-solid fa-truck-fast text-lime-400"></i><span>Entrega de Cartão</span><span id="badgeEntrega" class="ml-1 bg-lime-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden"></span></button>
+<button id="aba-backupentrega" onclick="mudarAba('backupentrega')" class="tab-btn w-full text-left px-4 py-3 text-sm font-semibold rounded-xl flex items-center gap-3"><i class="fa-solid fa-box-archive text-violet-400"></i><span>Backup Entrega</span><span id="badgeBackup" class="ml-1 bg-violet-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden"></span></button>
+<button id="aba-retorno439" onclick="mudarAba('retorno439')" class="tab-btn w-full text-left px-4 py-3 text-sm font-semibold rounded-xl flex items-center gap-3"><i class="fa-solid fa-file-import text-cyan-400"></i><span>Retorno 439</span></button>
+<button id="aba-sistemaescolar" onclick="mudarAba('sistemaescolar')" class="tab-btn w-full text-left px-4 py-3 text-sm font-semibold rounded-xl flex items-center gap-3"><i class="fa-solid fa-school text-orange-400"></i><span>Sistema Escolar</span></button>
+<button id="aba-folhaimpressao" onclick="mudarAba('folhaimpressao')" class="tab-btn w-full text-left px-4 py-3 text-sm font-semibold rounded-xl flex items-center gap-3"><i class="fa-solid fa-print text-pink-400"></i><span>Folha de Impressão</span><span id="badgeFolha" class="ml-1 bg-pink-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden"></span></button>
+</nav>
+</aside>
+
+<main class="flex-1 p-4 md:p-6 space-y-6 overflow-x-hidden">
+
+<div id="painel-coletar" class="space-y-6">
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-2xl shadow-sm space-y-4">
+<div class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 dark:border-slate-700 pb-3">
+<div>
+<h3 class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-keyboard text-amber-500"></i> Coletar Número do Cartão</h3>
+<p class="text-xs text-slate-500 mt-1">Cole a lista de cartões (um por linha) ou envie do Retorno 439. O botão envia para a coluna <b>Cartão</b> da aba <b>Entrega de Cartão</b>.</p>
+</div>
+<div class="flex flex-wrap gap-2">
+<button type="button" onclick="enviarCartoesParaEntrega()" class="bg-lime-600 hover:bg-lime-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-paper-plane"></i>Enviar p/ Entrega de Cartão</button>
+<button type="button" onclick="limparCaixaColeta()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-eraser"></i>Limpar caixa</button>
+</div>
+</div>
+<label class="block text-xs font-semibold mb-1">Lista de números de cartão</label>
+<textarea id="caixaCartoes" rows="10" class="w-full min-h-[160px] max-h-[55vh] bg-slate-50 dark:bg-slate-900 border border-amber-400/50 rounded-xl p-3 text-sm font-mono focus:outline-none focus:border-lime-500 resize" placeholder="Cole os números dos cartões, um por linha..." oninput="atualizarContagemColeta()"></textarea>
+<div id="rodapeColeta" class="rodape-contagem rodape-neutro"><span><i class="fa-solid fa-credit-card mr-1"></i><span id="contagemColeta">0</span> linha(s)</span></div>
+<div id="avisoColeta" class="hidden p-3 rounded-xl text-sm font-semibold border"></div>
+</div>
+</div>
+
+<div id="painel-entregacartao" class="space-y-6 hidden">
+<div class="px-1 py-2 flex flex-wrap items-center gap-x-8 gap-y-2 text-base font-extrabold">
+<span style="color:#a3e635"><i class="fa-solid fa-truck-fast mr-1"></i>Entrega de Cartão Malote</span>
+<span style="color:#38bdf8">Cartões: <span id="ecStatTotal" class="text-xl">0</span></span>
+<span style="color:#4ade80">Com portador: <span id="ecStatComNome" class="text-xl">0</span></span>
+<span style="color:#fbbf24">Sem portador: <span id="ecStatSemNome" class="text-xl">0</span></span>
+</div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-2xl shadow-sm flex flex-col gap-4">
+<div class="w-full md:w-96 relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-magnifying-glass"></i></span>
+<input type="text" id="ecBusca" oninput="processarFiltrosDebounced('entregacartao')" placeholder="Pesquisa rápida..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-blue-500">
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<button type="button" onclick="buscarPortador439()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-3.5 py-2 rounded-xl text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-magnifying-glass-plus"></i>Buscar portador no 439</button>
+<button type="button" onclick="buscarEscolaPorCPF()" class="bg-orange-600 hover:bg-orange-500 text-white px-3.5 py-2 rounded-xl text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-school"></i>Buscar escola pelo CPF</button>
+<button type="button" onclick="gerarFolhaImpressao()" class="bg-pink-600 hover:bg-pink-500 text-white px-3.5 py-2 rounded-xl text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-print"></i>Gerar folha de impressão</button>
+<button type="button" onclick="enviarParaBackupESupabase()" class="bg-violet-600 hover:bg-violet-500 text-white px-3.5 py-2 rounded-xl text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-box-archive"></i>Enviar p/ Backup + Supabase</button>
+<button type="button" onclick="excluirSelecionadas('entregacartao')" class="bg-rose-600 hover:bg-rose-500 text-white px-3.5 py-2 rounded-xl text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-trash-can"></i>Excluir selecionadas</button>
+<button type="button" onclick="limparAba('entregacartao')" class="bg-slate-600 hover:bg-slate-500 text-white px-3.5 py-2 rounded-xl text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-broom"></i>Limpar painel</button>
+<span id="ecContador" class="text-sm text-slate-500">0 registros</span>
+</div>
+</div>
+<div id="ecAviso" class="hidden p-3 rounded-xl text-sm font-semibold border"></div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+<div class="overflow-x-auto max-h-[70vh]"><table class="tabela-dados text-left text-sm whitespace-nowrap" style="table-layout:fixed;width:100%"><thead id="ecHead" class="sticky top-0 z-20"></thead><tbody id="ecBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="painel-backupentrega" class="space-y-6 hidden">
+<div class="px-1 py-2 flex flex-wrap items-center gap-x-8 gap-y-2 text-base font-extrabold">
+<span style="color:#a78bfa"><i class="fa-solid fa-box-archive mr-1"></i>Backup — Entrega de Cartão</span>
+<span style="color:#38bdf8">Registros: <span id="beStatTotal" class="text-xl">0</span></span>
+</div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-2xl shadow-sm flex flex-col gap-4">
+<div class="w-full md:w-96 relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-magnifying-glass"></i></span>
+<input type="text" id="beBusca" oninput="processarFiltrosDebounced('backupentrega')" placeholder="Pesquisa no backup..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-blue-500">
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<button type="button" onclick="carregarListaSupabase('backupentrega')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2 rounded-xl text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-rotate mr-1"></i>Atualizar do Supabase</button>
+<button type="button" onclick="gerarFolhaImpressao('backupentrega')" class="bg-pink-600 hover:bg-pink-500 text-white px-3.5 py-2 rounded-xl text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-print"></i>Enviar para impressão</button>
+<button type="button" onclick="exportarBackupExcel()" class="bg-green-700 hover:bg-green-600 text-white px-3.5 py-2 rounded-xl text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-file-excel"></i>Exportar Excel</button>
+<span id="beContador" class="text-sm text-slate-500">0 registros</span>
+</div>
+</div>
+<div id="beAviso" class="hidden p-3 rounded-xl text-sm font-semibold border"></div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+<div class="overflow-x-auto max-h-[70vh]"><table class="tabela-dados text-left text-sm whitespace-nowrap" style="table-layout:fixed;width:100%"><thead id="beHead" class="sticky top-0 z-20"></thead><tbody id="beBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="painel-retorno439" class="space-y-6 hidden">
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-2xl shadow-sm"><p class="text-xs font-semibold uppercase text-slate-500">Registros</p><h3 id="r439StatTotal" class="text-2xl font-bold mt-1">0</h3></div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-2xl shadow-sm"><p class="text-xs font-semibold uppercase text-slate-500">Origem</p><p id="r439NomeArquivo" class="text-sm font-semibold mt-2 break-all">Nenhum</p></div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-2xl shadow-sm"><p class="text-xs font-semibold uppercase text-slate-500">Data</p><p id="r439DataArquivo" class="text-2xl font-bold mt-1 text-blue-500">—</p></div>
+</div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-2xl shadow-sm space-y-4">
+<div class="flex flex-wrap items-center justify-between gap-3">
+<div><h3 class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-file-import text-cyan-500"></i> Retorno 439</h3>
+<p class="text-xs text-slate-500 mt-1">Carrega automaticamente da tabela <b>retorno_439</b> do Supabase. Marque as linhas e use o botão ao lado para enviar para a Coleta de Cartões.</p></div>
+<div class="flex flex-wrap gap-2">
+<button onclick="enviarSelecionados439ParaColeta()" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-share"></i>Enviar p/ Coletar Cartões</button>
+<button onclick="carregarRetorno439Supabase()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold"><i class="fa-solid fa-rotate mr-1"></i>Recarregar do Supabase</button>
+<button onclick="document.getElementById('r439Arquivo').click()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold"><i class="fa-solid fa-folder-open mr-1"></i>Selecionar .RET</button>
+<input type="file" id="r439Arquivo" accept=".ret,.RET,*/*" class="hidden" onchange="lerArquivoRetorno439(this.files[0])">
+<button onclick="limparPainel439()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold"><i class="fa-solid fa-eraser mr-1"></i>Limpar painel</button>
+</div></div>
+<div id="r439Aviso" class="hidden p-3 rounded-xl text-sm font-semibold border"></div>
+</div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-2xl shadow-sm">
+<div class="w-full md:w-96 relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-magnifying-glass"></i></span>
+<input type="text" id="r439Busca" oninput="processarFiltrosDebounced('retorno439')" placeholder="Pesquisa no retorno 439..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-blue-500">
+</div></div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+<div class="overflow-x-auto max-h-[70vh]"><table class="tabela-dados text-left text-sm whitespace-nowrap" style="table-layout:fixed;width:100%"><thead id="r439Head" class="sticky top-0 z-20"></thead><tbody id="r439Body"></tbody></table></div>
+</div>
+</div>
+
+<div id="painel-sistemaescolar" class="space-y-6 hidden">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-2xl shadow-sm"><p class="text-xs font-semibold uppercase text-slate-500">Escolas / Diretores</p><h3 id="seStatTotal" class="text-2xl font-bold mt-1">0</h3></div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-2xl shadow-sm"><p class="text-xs font-semibold uppercase text-slate-500">Origem</p><p id="seOrigem" class="text-sm font-semibold mt-2 break-all">Nenhum</p></div>
+</div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-5 rounded-2xl shadow-sm space-y-4">
+<div class="flex flex-wrap items-center justify-between gap-3">
+<div><h3 class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-school text-orange-500"></i> Sistema Escolar</h3>
+<p class="text-xs text-slate-500 mt-1">Carrega da tabela <b>sistema_escolar</b> do Supabase. Usado pelo botão <b>Buscar escola pelo CPF</b> na Entrega de Cartão.</p></div>
+<div class="flex flex-wrap gap-2">
+<button onclick="carregarSistemaEscolarSupabase()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold"><i class="fa-solid fa-rotate mr-1"></i>Recarregar do Supabase</button>
+<button onclick="limparPainelSE()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold"><i class="fa-solid fa-eraser mr-1"></i>Limpar painel</button>
+</div></div>
+<div id="seAviso" class="hidden p-3 rounded-xl text-sm font-semibold border"></div>
+</div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-2xl shadow-sm">
+<div class="w-full md:w-96 relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-magnifying-glass"></i></span>
+<input type="text" id="seBusca" oninput="processarFiltrosDebounced('sistemaescolar')" placeholder="Pesquisa no sistema escolar..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-blue-500">
+</div></div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden">
+<div class="overflow-x-auto max-h-[70vh]"><table class="tabela-dados text-left text-sm whitespace-nowrap" style="table-layout:fixed;width:100%"><thead id="seHead" class="sticky top-0 z-20"></thead><tbody id="seBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="painel-folhaimpressao" class="space-y-6 hidden">
+<div class="px-1 py-2 flex flex-wrap items-center gap-x-8 gap-y-2 text-base font-extrabold no-print">
+<span style="color:#ec4899"><i class="fa-solid fa-print mr-1"></i>Folha de Impressão</span>
+<span style="color:#38bdf8">Linhas na folha: <span id="fiStatTotal" class="text-xl">0</span></span>
+</div>
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-2xl shadow-sm flex flex-wrap items-center gap-3 no-print">
+<button type="button" onclick="window.print()" class="bg-pink-600 hover:bg-pink-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-print"></i>Imprimir / PDF</button>
+<button type="button" onclick="limparFolhaImpressao()" class="bg-slate-600 hover:bg-slate-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-broom"></i>Limpar folhas</button>
+<span class="text-sm text-slate-500">As folhas abaixo são geradas a partir das linhas <b>selecionadas</b> na Entrega de Cartão ou no Backup (ou todas se nenhuma estiver marcada).</span>
+</div>
+<div id="fiAviso" class="hidden p-3 rounded-xl text-sm font-semibold border no-print"></div>
+<div id="areaFolhas" class="space-y-4"></div>
+</div>
+</main>
+
+<div id="caixaFiltro" class="hidden bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl shadow-2xl p-3">
+<div class="relative mb-2"><span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-magnifying-glass text-xs"></i></span>
+<input type="text" id="filtroBuscaValores" class="filtro-busca-input" placeholder="Digite para filtrar (exato ao aplicar)..." oninput="filtrarListaValoresFiltro()" onkeydown="if(event.key==='Enter'){event.preventDefault();aplicarFiltroColuna();}"></div>
+<div class="flex gap-2 mb-2">
+<button type="button" onclick="marcarTodosFiltro(true)" class="text-xs px-2 py-1 rounded bg-blue-600 text-white font-bold">Todos</button>
+<button type="button" onclick="marcarTodosFiltro(false)" class="text-xs px-2 py-1 rounded bg-slate-500 text-white font-bold">Nenhum</button>
+<button type="button" onclick="aplicarFiltroColuna()" class="text-xs px-2 py-1 rounded bg-emerald-600 text-white font-bold ml-auto">Aplicar</button>
+<button type="button" onclick="fecharFiltro()" class="text-xs px-2 py-1 rounded bg-slate-600 text-white font-bold">Fechar</button>
+</div>
+<div id="listaValoresFiltro" class="max-h-72 overflow-y-auto space-y-1 text-sm"></div>
+</div>
+
+<!-- Formulário de edição -->
+<div id="modalEdicao" style="display:none;background:rgba(0,0,0,.6)" class="fixed inset-0 z-[70] items-center justify-center p-4">
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto p-5">
+<div class="flex items-center justify-between gap-3 mb-4">
+<h3 id="modalTitulo" class="font-bold text-lg flex items-center gap-2"><i class="fa-solid fa-pen text-sky-400"></i> Editar registro</h3>
+<button type="button" onclick="fecharEdicao()" class="btn-acao" title="Fechar"><i class="fa-solid fa-xmark"></i></button>
+</div>
+<div id="modalCampos" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+<div id="modalAviso" class="hidden mt-3 p-3 rounded-xl text-sm font-semibold border"></div>
+<div class="flex justify-end gap-2 mt-5">
+<button type="button" onclick="fecharEdicao()" class="bg-slate-600 hover:bg-slate-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold">Cancelar</button>
+<button type="button" id="btnSalvarEdicao" onclick="salvarEdicao()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-floppy-disk"></i>Salvar edição</button>
+</div>
+</div>
+</div>
+
+<script>
+const SUPABASE_URL='https://vsubudeifwpdzxwoayij.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_vrBHcx43pZg3MWhYv8Wl-w_hd09KwTP';
+const TABELA_RETORNO_439='retorno_439';
+const TABELA_SISTEMA_ESCOLAR='sistema_escolar';
+const TABELA_ENTREGA='entrega_cartao';
+const TABELA_BACKUP='entrega_backup';
+let supabaseClient=null;
+try{if(SUPABASE_URL&&!SUPABASE_URL.includes('YOUR_PROJECT'))supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);}catch(e){}
+let abaAtual='coletar',filtroAberto=null,valoresFiltroTemp=new Set(),edicaoAtual=null;
+const cargas={};
+function unica(nome,fn){if(cargas[nome])return cargas[nome];cargas[nome]=fn().finally(()=>{cargas[nome]=null;});return cargas[nome];}
+function debounce(fn,ms){let t;return function(...a){clearTimeout(t);t=setTimeout(()=>fn.apply(this,a),ms);};}
+const processarFiltrosDebounced=debounce(function(aba){processarFiltros(aba);},180);
+
+/* Colunas = tabela public.entrega_cartao (mesmo cabeçalho em Entrega e Backup) + coluna Ações */
+const COLUNAS_ENTREGA=[
+{key:'select',label:'',tipo:'checkbox',largura:44},
+{key:'nte',label:'NTE',tipo:'texto',largura:80},
+{key:'municipio',label:'Município',tipo:'texto',largura:190},
+{key:'cod_sec',label:'Cód. SEC',tipo:'texto',largura:100},
+{key:'unidade_escolar',label:'Unidade Escolar',tipo:'texto',largura:260},
+{key:'diretor_a',label:'Diretor(a) / Portador',tipo:'texto',largura:260},
+{key:'cartao',label:'Cartão',tipo:'texto',largura:170},
+{key:'situacao_entregue',label:'Situação Entregue',tipo:'texto',largura:150},
+{key:'data_entrega',label:'Data Entrega',tipo:'texto',largura:120},
+{key:'programa',label:'Programa',tipo:'texto',largura:130},
+{key:'cpf',label:'CPF',tipo:'texto',largura:140},
+{key:'lote',label:'Lote',tipo:'texto',largura:100},
+{key:'acoes',label:'Ações',tipo:'acoes',largura:110}
+];
+const COLUNAS_BACKUP=COLUNAS_ENTREGA;
+const CAMPOS_DB=['nte','municipio','cod_sec','unidade_escolar','diretor_a','cartao','situacao_entregue','data_entrega','programa','cpf','lote'];
+const COLUNAS_439=[
+{key:'select',label:'',tipo:'checkbox',largura:44},
+{key:'programa',label:'Programa',tipo:'texto',largura:130},{key:'nte',label:'NTE',tipo:'texto',largura:75},
+{key:'centro_custo',label:'Centro de Custo / Município',tipo:'texto',largura:190},{key:'id_custo',label:'ID Custo',tipo:'texto',largura:120},
+{key:'nome_personalizado',label:'Nome Personalizado',tipo:'texto',largura:200},{key:'nome_completo',label:'Nome Completo',tipo:'texto',largura:260},
+{key:'cpf',label:'CPF',tipo:'texto',largura:130},{key:'cartao',label:'Cartão',tipo:'texto',largura:170},
+{key:'situacao',label:'Situação',tipo:'texto',largura:130},{key:'valor_limite',label:'Valor Limite',tipo:'moeda',largura:130}
+];
+const COLUNAS_SE=[
+{key:'nte',label:'NTE',tipo:'texto',largura:80},
+{key:'municipio',label:'Município',tipo:'texto',largura:190},
+{key:'cod_sec',label:'Código SEC',tipo:'texto',largura:110},
+{key:'cod_mec',label:'Código MEC',tipo:'texto',largura:110},
+{key:'escola',label:'Escola',tipo:'texto',largura:280},
+{key:'diretor',label:'Diretor(a)',tipo:'texto',largura:250},
+{key:'cpf',label:'CPF',tipo:'texto',largura:130},
+{key:'matricula',label:'Matrícula',tipo:'texto',largura:110},
+{key:'data_nascimento',label:'Data de Nascimento',tipo:'texto',largura:140},
+{key:'celular',label:'Celular',tipo:'texto',largura:130}
+];
+/* Nomes aceitos para cada coluna da tabela sistema_escolar (sem acento, minúsculo, sem _ ou espaço) */
+const ALIAS_SE={
+nte:['nte'],municipio:['municipio','cidade'],cod_sec:['codsec','codigosec','sec'],
+cod_mec:['codmec','codigomec','mec','inep','codinep'],escola:['escola','unidadeescolar','nomeescola','unidade'],
+diretor:['diretor','diretora','nomediretor','nomediretora'],cpf:['cpf','cpfdiretor'],matricula:['matricula'],
+data_nascimento:['datanascimento','nascimento','datanasc','dtnascimento'],
+celular:['celular','telefone','fone','numerodecaracteres','caracteres']
+};
+const abas={
+entregacartao:{colunas:COLUNAS_ENTREGA,listaOriginal:[],listaFiltrada:[],filtrosAtivos:{},idsSelecionados:new Set(),headId:'ecHead',bodyId:'ecBody',buscaId:'ecBusca',contadorId:'ecContador'},
+backupentrega:{colunas:COLUNAS_BACKUP,listaOriginal:[],listaFiltrada:[],filtrosAtivos:{},idsSelecionados:new Set(),headId:'beHead',bodyId:'beBody',buscaId:'beBusca',contadorId:'beContador'},
+retorno439:{colunas:COLUNAS_439,listaOriginal:[],listaFiltrada:[],filtrosAtivos:{},idsSelecionados:new Set(),headId:'r439Head',bodyId:'r439Body',buscaId:'r439Busca',contadorId:null},
+sistemaescolar:{colunas:COLUNAS_SE,listaOriginal:[],listaFiltrada:[],filtrosAtivos:{},idsSelecionados:new Set(),headId:'seHead',bodyId:'seBody',buscaId:'seBusca',contadorId:null}
+};
+
+/* ===== Utilidades ===== */
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function soDigitos(v){return String(v??'').replace(/\D/g,'');}
+function chaveCartao(v){return soDigitos(v).replace(/^0+/,'');}
+function cpfKey(v){const d=soDigitos(v);return d?d.padStart(11,'0'):'';}
+function norm(s){return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');}
+function pick(r,nomes){for(const n of nomes){const v=r[n];if(v!==undefined&&v!==null&&String(v).trim()!=='')return v;}return null;}
+function formatarMoeda(v){const n=typeof v==='number'?v:parseFloat(String(v??'').replace(/\./g,'').replace(',','.'))||0;return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
+function hojeISO(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function dataHojeBR(){const d=new Date();return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();}
+function paraISO(v){if(v==null||String(v).trim()==='')return null;const s=String(v).trim();let m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return m[1]+'-'+m[2]+'-'+m[3];m=s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);if(m)return m[3]+'-'+m[2]+'-'+m[1];return null;}
+function uid(p){return p+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);}
+function mostrarAviso(id,msg,tipo){const el=document.getElementById(id);if(!el)return;const m={ok:'rodape-ok',erro:'rodape-erro',alerta:'rodape-alerta',info:'rodape-neutro'};el.className='p-3 rounded-xl text-sm font-semibold border '+(m[tipo]||m.info)+(id==='fiAviso'?' no-print':'');el.innerHTML=msg;el.classList.remove('hidden');}
+function avisoDaAba(aba){return aba==='backupentrega'?'beAviso':'ecAviso';}
+function tabelaDaAba(aba){return aba==='backupentrega'?TABELA_BACKUP:TABELA_ENTREGA;}
+async function fetchTudo(tabela,ordem){let todos=[],from=0;const page=1000;while(true){let q=supabaseClient.from(tabela).select('*');if(ordem)q=q.order(ordem);const{data,error}=await q.range(from,from+page-1);if(error)throw error;if(!data||!data.length)break;todos=todos.concat(data);if(data.length<page)break;from+=page;}return todos;}
+
+/* ===== Tema / menu / abas ===== */
+function aplicarTema(t){document.documentElement.setAttribute('data-tema',t);if(['azulclaro','claro'].includes(t))document.documentElement.classList.remove('dark');else document.documentElement.classList.add('dark');localStorage.setItem('temaPainel',t);document.querySelectorAll('#seletorTema button').forEach(b=>b.classList.toggle('ativo',b.dataset.tema===t));}
+function toggleMenu(){document.body.classList.toggle('menu-recolhido');const r=document.body.classList.contains('menu-recolhido');localStorage.setItem('menuLateralRecolhido',r?'1':'0');document.getElementById('iconeMenu').className=r?'fa-solid fa-angles-right':'fa-solid fa-angles-left';}
+function mudarAba(nome){
+abaAtual=nome;fecharFiltro();
+['coletar','entregacartao','backupentrega','retorno439','sistemaescolar','folhaimpressao'].forEach(k=>{const p=document.getElementById('painel-'+k);const b=document.getElementById('aba-'+k);if(p)p.classList.toggle('hidden',k!==nome);if(b)b.classList.toggle('ativo',k===nome);});
+if(abas[nome]){construirCabecalho(nome);processarFiltros(nome);}
+// Ao abrir Backup, carrega automaticamente do Supabase
+if(nome==='backupentrega'&&supabaseClient){
+carregarListaSupabase('backupentrega');
+}
+}
+
+/* ===== Tabelas ===== */
+function construirCabecalho(aba){
+const est=abas[aba];const thead=document.getElementById(est.headId);if(!thead)return;
+let html='<tr>';
+est.colunas.forEach(col=>{
+if(col.tipo==='checkbox')html+=`<th data-col-key="${esc(col.key||'selecao')}" class="col-select-fixa" style="width:${col.largura}px;min-width:${col.largura}px"><input type="checkbox" onchange="toggleSelecionarTodos('${aba}',this.checked)"><span class="col-resizer" onpointerdown="iniciarRedimensionamento(event,'${aba}','${esc(col.key||'selecao')}')"></span></th>`;
+  else if(col.tipo==='acoes')html+=`<th data-col-key="acoes" class="col-acoes-fixa" style="width:${col.largura}px;min-width:${col.largura}px">${esc(col.label)}<span class="col-resizer" onpointerdown="iniciarRedimensionamento(event,'${aba}','acoes')"></span></th>`;
+  else{const ativo=est.filtrosAtivos[col.key]&&est.filtrosAtivos[col.key].size>0;const classePrograma=aba==='retorno439'&&col.key==='programa'?' col-programa-fixa':'';html+=`<th data-col-key="${esc(col.key)}" class="${classePrograma.trim()}" style="width:${col.largura}px;min-width:${col.largura}px"><div class="flex items-center gap-1 justify-between"><span class="truncate">${esc(col.label)}</span><button type="button" class="btn-filtro-th ${ativo?'ativo':''}" onclick="abrirFiltro(event,'${aba}','${col.key}')"><i class="fa-solid fa-filter text-[10px]"></i></button></div><span class="col-resizer" onpointerdown="iniciarRedimensionamento(event,'${aba}','${esc(col.key)}')"></span></th>`;}
+});
+html+='</tr>';thead.innerHTML=html;
+}
+let redimensionamento=null;
+function iniciarRedimensionamento(ev,aba,key){ev.preventDefault();ev.stopPropagation();const th=ev.currentTarget.parentElement;const est=abas[aba];const col=est.colunas.find(c=>(c.key||'selecao')===key);if(!col)return;redimensionamento={aba,col,th,inicioX:ev.clientX,inicioLargura:th.getBoundingClientRect().width};th.classList.add('ativo');ev.currentTarget.setPointerCapture?.(ev.pointerId);}
+document.addEventListener('pointermove',ev=>{if(!redimensionamento)return;const r=redimensionamento;const nova=Math.max(56,Math.round(r.inicioLargura+(ev.clientX-r.inicioX)));r.col.largura=nova;r.th.style.width=nova+'px';r.th.style.minWidth=nova+'px';const idx=abas[r.aba].colunas.indexOf(r.col);document.querySelectorAll('#'+abas[r.aba].bodyId+' tr').forEach(tr=>{const td=tr.children[idx];if(td){td.style.width=nova+'px';td.style.minWidth=nova+'px';}});});
+document.addEventListener('pointerup',()=>{if(!redimensionamento)return;redimensionamento.th.classList.remove('ativo');redimensionamento=null;salvarLocal();});
+function valorCelula(item,col){
+let v=item[col.key];if(v==null||v==='')return '—';
+if(col.tipo==='moeda')return formatarMoeda(v);
+if(col.key==='data_entrega'||col.key==='data_nascimento'||col.key==='lote'){const m=String(v).match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return m[3]+'/'+m[2]+'/'+m[1];}
+return String(v);
+}
+function renderizarTabela(aba){
+const est=abas[aba];const tbody=document.getElementById(est.bodyId);if(!tbody)return;
+if(!est.listaFiltrada.length){tbody.innerHTML=`<tr><td colspan="${est.colunas.length}" class="p-10 text-center text-slate-400">Nenhum registro</td></tr>`;if(est.contadorId)document.getElementById(est.contadorId).textContent='0 registros';return;}
+tbody.innerHTML=est.listaFiltrada.map(item=>{
+let tr='<tr>';
+est.colunas.forEach(col=>{
+if(col.tipo==='checkbox'){const checked=est.idsSelecionados.has(String(item.id))?'checked':'';tr+=`<td class="col-select-fixa text-center"><input type="checkbox" ${checked} onchange="toggleLinha('${aba}','${esc(String(item.id))}',this.checked)"></td>`;}
+else if(col.tipo==='acoes'){const id=esc(String(item.id));const nuvem=item.db_id!=null?'<i class="fa-solid fa-cloud text-emerald-400 text-[11px] ml-1" title="Gravado no Supabase"></i>':'<i class="fa-solid fa-cloud text-slate-500 text-[11px] ml-1 opacity-40" title="Ainda não gravado no Supabase"></i>';const enviado=item.status_backup==='enviado';const status=aba==='entregacartao'?`<span class="status-backup ${enviado?'bg-emerald-100 text-emerald-700':'bg-red-100 text-red-700'}" title="${enviado?'Registro enviado para o Backup':'Registro pendente de envio para o Backup'}">${enviado?'Enviado no backup':'Pendente'}</span>`:'';tr+=`<td class="col-acoes-fixa text-center"><div class="flex flex-wrap items-center justify-center gap-1">${status}<button type="button" class="btn-acao text-sky-400" title="Editar" onclick="abrirEdicao('${aba}','${id}')"><i class="fa-solid fa-pen"></i></button><button type="button" class="btn-acao text-rose-500" title="Excluir" onclick="excluirLinha('${aba}','${id}')"><i class="fa-solid fa-trash-can"></i></button>${nuvem}</div></td>`;}
+  else{const txt=valorCelula(item,col);let extra='';if(col.key==='cartao'&&item.status_busca){if(item.status_busca==='encontrado')extra=' style="color:#16a34a;font-weight:700"';else if(item.status_busca==='nao')extra=' style="color:#dc2626;font-weight:700"';}const classePrograma=aba==='retorno439'&&col.key==='programa'?' col-programa-fixa':'';tr+=`<td class="truncate${classePrograma}" title="${esc(txt)}"${extra}>${esc(txt)}</td>`;}
+});
+return tr+'</tr>';
+}).join('');
+if(est.contadorId)document.getElementById(est.contadorId).textContent=est.listaFiltrada.length.toLocaleString('pt-BR')+' registro(s)'+(est.idsSelecionados.size?' · '+est.idsSelecionados.size+' selecionado(s)':'');
+}
+function processarFiltros(aba){
+const est=abas[aba];const buscaEl=document.getElementById(est.buscaId);const termo=(buscaEl?buscaEl.value:'').toLowerCase().trim();
+est.listaFiltrada=est.listaOriginal.filter(item=>{
+for(const[key,set]of Object.entries(est.filtrosAtivos)){if(!set||!set.size)continue;const v=String(item[key]??'').trim()||'(vazio)';if(!set.has(v))return false;}
+if(!termo)return true;
+return est.colunas.some(c=>c.tipo==='texto'||c.tipo==='moeda'?String(item[c.key]??'').toLowerCase().includes(termo):false);
+});
+renderizarTabela(aba);
+if(aba==='entregacartao')atualizarResumoEntrega();
+if(aba==='backupentrega')atualizarResumoBackup();
+if(aba==='retorno439')atualizarResumo439();
+if(aba==='sistemaescolar')atualizarResumoSE();
+}
+function limparTodosFiltros(){if(!abas[abaAtual])return;abas[abaAtual].filtrosAtivos={};const busca=document.getElementById(abas[abaAtual].buscaId);if(busca)busca.value='';fecharFiltro();construirCabecalho(abaAtual);processarFiltros(abaAtual);}
+function toggleLinha(aba,id,checked){const est=abas[aba];if(checked)est.idsSelecionados.add(String(id));else est.idsSelecionados.delete(String(id));renderizarTabela(aba);}
+function toggleSelecionarTodos(aba,checked){const est=abas[aba];if(checked)est.listaFiltrada.forEach(i=>est.idsSelecionados.add(String(i.id)));else est.idsSelecionados.clear();renderizarTabela(aba);}
+function abrirFiltro(ev,aba,key){
+ev.stopPropagation();
+filtroAberto={aba,key};
+const est=abas[aba];
+const valores=new Map();
+est.listaOriginal.forEach(item=>{const v=String(item[key]??'').trim()||'(vazio)';valores.set(v,(valores.get(v)||0)+1);});
+const ativos=est.filtrosAtivos[key]||null;
+valoresFiltroTemp=new Set(ativos?[...ativos]:[...valores.keys()]);
+const lista=document.getElementById('listaValoresFiltro');
+const ordenados=[...valores.entries()].sort((a,b)=>a[0].localeCompare(b[0],'pt-BR'));
+lista.innerHTML=ordenados.map(([v,n])=>`<label class="flex items-center gap-2 px-1 py-0.5 cursor-pointer" data-val-norm="${esc(v.toLowerCase())}"><input type="checkbox" ${valoresFiltroTemp.has(v)?'checked':''} data-val="${esc(v)}" onchange="toggleValorFiltro(this)"><span class="truncate flex-1">${esc(v)}</span><span class="text-[10px] text-slate-400">${n}</span></label>`).join('');
+const inp=document.getElementById('filtroBuscaValores');
+inp.value='';
+inp.focus();
+const caixa=document.getElementById('caixaFiltro');
+caixa.classList.remove('hidden');
+const rect=ev.currentTarget.getBoundingClientRect();
+let left=rect.left,top=rect.bottom+6;
+if(left+360>window.innerWidth)left=window.innerWidth-370;
+caixa.style.left=left+'px';
+caixa.style.top=top+'px';
+}
+function toggleValorFiltro(el){const v=el.dataset.val;if(el.checked)valoresFiltroTemp.add(v);else valoresFiltroTemp.delete(v);}
+function marcarTodosFiltro(sim){document.querySelectorAll('#listaValoresFiltro input[type=checkbox]').forEach(cb=>{if(cb.parentElement.style.display==='none')return;cb.checked=sim;toggleValorFiltro(cb);});}
+function filtrarListaValoresFiltro(){
+const t=document.getElementById('filtroBuscaValores').value.toLowerCase().trim();
+const labels=document.querySelectorAll('#listaValoresFiltro label');
+if(!t){
+labels.forEach(lab=>{lab.style.display='';});
+return;
+}
+// Preferência por match exato primeiro; se nenhum exato, mostra os que contêm o termo
+let temExato=false;
+labels.forEach(lab=>{
+const norm=lab.getAttribute('data-val-norm')||'';
+if(norm===t)temExato=true;
+});
+labels.forEach(lab=>{
+const norm=lab.getAttribute('data-val-norm')||'';
+const cb=lab.querySelector('input[type=checkbox]');
+let match;
+if(temExato){
+match=norm===t;
+}else{
+match=norm.includes(t);
+}
+lab.style.display=match?'':'none';
+// Auto-marca só os visíveis (não precisa desmarcar manualmente)
+if(cb){
+cb.checked=match;
+if(match)valoresFiltroTemp.add(cb.dataset.val);
+else valoresFiltroTemp.delete(cb.dataset.val);
+}
+});
+}
+function aplicarFiltroColuna(){
+if(!filtroAberto)return;
+const{aba,key}=filtroAberto;
+const est=abas[aba];
+const t=document.getElementById('filtroBuscaValores').value.trim();
+// Se digitou algo e tem matches, usa exatamente o que está marcado (já auto-ajustado)
+const todos=new Set();
+est.listaOriginal.forEach(item=>todos.add(String(item[key]??'').trim()||'(vazio)'));
+if(valoresFiltroTemp.size===0||valoresFiltroTemp.size===todos.size){
+delete est.filtrosAtivos[key];
+}else{
+est.filtrosAtivos[key]=new Set(valoresFiltroTemp);
+}
+fecharFiltro();
+construirCabecalho(aba);
+processarFiltros(aba);
+}
+function fecharFiltro(){document.getElementById('caixaFiltro').classList.add('hidden');filtroAberto=null;}
+document.addEventListener('click',e=>{const caixa=document.getElementById('caixaFiltro');if(!caixa.classList.contains('hidden')&&!caixa.contains(e.target)&&!e.target.closest('.btn-filtro-th'))fecharFiltro();});
+
+/* ===== Coletar ===== */
+function atualizarContagemColeta(){const n=document.getElementById('caixaCartoes').value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).length;document.getElementById('contagemColeta').textContent=n;document.getElementById('rodapeColeta').className='rodape-contagem '+(n>0?'rodape-ok':'rodape-neutro');}
+function limparCaixaColeta(){document.getElementById('caixaCartoes').value='';atualizarContagemColeta();document.getElementById('avisoColeta').classList.add('hidden');}
+function novaLinhaEntrega(cartao){return{id:uid('ec'),db_id:null,nte:null,municipio:null,cod_sec:null,unidade_escolar:null,diretor_a:null,cartao:cartao,situacao_entregue:null,data_entrega:null,programa:null,cpf:null,lote:null,status_busca:null,status_backup:'pendente'};}
+function enviarCartoesParaEntrega(){
+const linhas=document.getElementById('caixaCartoes').value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+if(!linhas.length){mostrarAviso('avisoColeta','Informe ao menos um número de cartão.','erro');return;}
+const est=abas.entregacartao;const existentes=new Set(est.listaOriginal.map(i=>soDigitos(i.cartao)));let add=0,dup=0;
+linhas.forEach(raw=>{const dig=soDigitos(raw);if(!dig)return;if(existentes.has(dig)){dup++;return;}existentes.add(dig);est.listaOriginal.push(novaLinhaEntrega(dig));add++;});
+salvarLocal();
+mostrarAviso('avisoColeta',`<b>${add}</b> cartão(ões) enviado(s).`+(dup?` <b>${dup}</b> duplicado(s) ignorado(s).`:''),add?'ok':'alerta');
+if(add)mudarAba('entregacartao');
+}
+
+/* ===== Enviar selecionados do 439 para a Coleta de Cartões ===== */
+function enviarSelecionados439ParaColeta(){
+const est=abas.retorno439;
+if(!est.idsSelecionados.size){
+alert('Selecione ao menos um registro na tabela do Retorno 439 utilizando as caixas de seleção à esquerda.');
+return;
+}
+const itensSelecionados=est.listaOriginal.filter(i=>est.idsSelecionados.has(String(i.id)));
+const cartoesNovos=itensSelecionados.map(i=>String(i.cartao??'').trim()).filter(Boolean);
+if(!cartoesNovos.length){
+alert('Nenhum dos registros selecionados possui número de cartão válido.');
+return;
+}
+const textarea=document.getElementById('caixaCartoes');
+const atual=textarea.value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+const conjuntoAtual=new Set(atual);
+let adicionados=0;
+cartoesNovos.forEach(c=>{
+if(!conjuntoAtual.has(c)){
+conjuntoAtual.add(c);
+atual.push(c);
+adicionados++;
+}
+});
+textarea.value=atual.join('\n');
+atualizarContagemColeta();
+mudarAba('coletar');
+mostrarAviso('avisoColeta',`<b>${adicionados}</b> cartão(ões) enviado(s) do Retorno 439 para a caixa de coleta.`,'ok');
+}
+
+/* ===== Buscar portador no 439 ===== */
+async function buscarPortador439(){
+const est=abas.entregacartao;
+if(!est.listaOriginal.length){alert('Não há cartões na Entrega de Cartão.');return;}
+if(!abas.retorno439.listaOriginal.length){
+if(!supabaseClient){alert('Retorno 439 vazio e o Supabase não está configurado. Configure SUPABASE_URL/SUPABASE_ANON_KEY ou importe o .RET.');mudarAba('retorno439');return;}
+mostrarAviso('ecAviso','Carregando Retorno 439 do Supabase...','info');
+await carregarRetorno439Supabase();
+if(!abas.retorno439.listaOriginal.length){mostrarAviso('ecAviso','Não foi possível carregar o Retorno 439. Veja a aba Retorno 439.','erro');return;}
+}
+const mapa=new Map();
+abas.retorno439.listaOriginal.forEach(r=>{const c=chaveCartao(r.cartao);if(c&&!mapa.has(c))mapa.set(c,r);});
+let achados=0,nao=0;
+est.listaOriginal.forEach(item=>{
+const ref=mapa.get(chaveCartao(item.cartao));
+if(ref){
+item.diretor_a=ref.nome_completo||item.diretor_a||null;
+item.cpf=ref.cpf||item.cpf||null;
+if(!item.programa&&ref.programa)item.programa=ref.programa;
+if(!item.nte&&ref.nte)item.nte=ref.nte;
+if(!item.municipio&&ref.centro_custo)item.municipio=ref.centro_custo;
+item.status_busca='encontrado';
+if(!item.lote)item.lote=hojeISO();
+  item.data_entrega=null;
+  achados++;
+}else{item.status_busca='nao';nao++;}
+});
+salvarLocal();processarFiltros('entregacartao');
+mostrarAviso('ecAviso',`Busca no 439: <b>${achados}</b> com portador/CPF`+(nao?`; <b>${nao}</b> sem correspondência (em vermelho).`:'.')+' Use <b>Enviar p/ Backup + Supabase</b> quando terminar.',achados?(nao?'alerta':'ok'):'erro');
+}
+
+/* ===== Buscar escola pelo CPF (Sistema Escolar) ===== */
+async function buscarEscolaPorCPF(){
+const est=abas.entregacartao;
+if(!est.listaOriginal.length){alert('Não há cartões na Entrega de Cartão.');return;}
+if(!abas.sistemaescolar.listaOriginal.length){
+if(!supabaseClient){alert('Sistema Escolar vazio e o Supabase não está configurado.');mudarAba('sistemaescolar');return;}
+mostrarAviso('ecAviso','Carregando Sistema Escolar do Supabase...','info');
+await carregarSistemaEscolarSupabase();
+if(!abas.sistemaescolar.listaOriginal.length){mostrarAviso('ecAviso','Não foi possível carregar o Sistema Escolar. Veja a aba Sistema Escolar.','erro');return;}
+}
+const mapa=new Map();
+abas.sistemaescolar.listaOriginal.forEach(r=>{const k=cpfKey(r.cpf);if(k&&!mapa.has(k))mapa.set(k,r);});
+let ach=0,nao=0,semCpf=0;
+est.listaOriginal.forEach(item=>{
+const k=cpfKey(item.cpf);
+if(!k){semCpf++;return;}
+const ref=mapa.get(k);
+if(!ref){nao++;return;}
+if(ref.nte)item.nte=ref.nte;
+if(ref.municipio)item.municipio=ref.municipio;
+if(ref.cod_sec)item.cod_sec=ref.cod_sec;
+if(ref.escola)item.unidade_escolar=ref.escola;
+if(!item.diretor_a&&ref.diretor)item.diretor_a=ref.diretor;
+ach++;
+});
+salvarLocal();processarFiltros('entregacartao');
+mostrarAviso('ecAviso',`Busca pelo CPF: <b>${ach}</b> escola(s) preenchida(s)`+(nao?`; <b>${nao}</b> CPF sem correspondência no Sistema Escolar`:'')+(semCpf?`; <b>${semCpf}</b> linha(s) sem CPF (rode primeiro "Buscar portador no 439")`:'')+'.',ach?((nao||semCpf)?'alerta':'ok'):'erro');
+}
+
+function atualizarResumoEntrega(){const lista=abas.entregacartao.listaFiltrada;let com=0,sem=0;lista.forEach(i=>{if(String(i.diretor_a??'').trim())com++;else sem++;});document.getElementById('ecStatTotal').textContent=lista.length.toLocaleString('pt-BR');document.getElementById('ecStatComNome').textContent=com.toLocaleString('pt-BR');document.getElementById('ecStatSemNome').textContent=sem.toLocaleString('pt-BR');const badge=document.getElementById('badgeEntrega');if(abas.entregacartao.listaOriginal.length){badge.textContent=abas.entregacartao.listaOriginal.length;badge.classList.remove('hidden');}else badge.classList.add('hidden');}
+function atualizarResumoBackup(){document.getElementById('beStatTotal').textContent=abas.backupentrega.listaFiltrada.length.toLocaleString('pt-BR');const badge=document.getElementById('badgeBackup');if(abas.backupentrega.listaOriginal.length){badge.textContent=abas.backupentrega.listaOriginal.length;badge.classList.remove('hidden');}else badge.classList.add('hidden');}
+function atualizarResumo439(){document.getElementById('r439StatTotal').textContent=abas.retorno439.listaFiltrada.length.toLocaleString('pt-BR');}
+function atualizarResumoSE(){document.getElementById('seStatTotal').textContent=abas.sistemaescolar.listaFiltrada.length.toLocaleString('pt-BR');}
+
+/* ===== Backup + Supabase (um botão só) ===== */
+async function enviarParaBackupESupabase(){
+const est=abas.entregacartao;
+if(!est.listaOriginal.length){alert('Entrega vazia.');return;}
+const n=est.listaOriginal.length;
+if(!confirm(`Enviar ${n} linha(s) para o Backup e gravar na tabela "${TABELA_BACKUP}" do Supabase?\n\nAs linhas permanecerão na Entrega de Cartão e também ficarão disponíveis no Backup.`))return;
+const copias=est.listaOriginal.map(item=>{const o={id:uid('be'),db_id:null,status_busca:null,status_backup:'enviado'};CAMPOS_DB.forEach(k=>{o[k]=item[k]??null;});item.status_backup='enviado';return o;});
+salvarLocal();
+mostrarAviso('ecAviso',`Enviando <b>${n}</b> registro(s) para Backup e Supabase...`,'info');
+let ins=0,erros=[];
+if(supabaseClient){
+try{
+for(let i=0;i<copias.length;i+=500){
+const lote=copias.slice(i,i+500);
+const{data,error}=await supabaseClient.from(TABELA_BACKUP).insert(lote.map(paraDB)).select('id');
+if(error){erros.push(error.message);break;}
+if(data&&data.length===lote.length){lote.forEach((it,j)=>{it.db_id=data[j].id;});ins+=lote.length;}
+else{erros.push('O Supabase não devolveu os ids (verifique RLS/SELECT).');break;}
+}
+}catch(e){erros.push(e.message||String(e));}
+}else{
+erros.push('Supabase não configurado — o envio não foi concluído. Configure a conexão para gravar na tabela entrega_backup.');
+}
+if(supabaseClient&&ins>0)await carregarListaSupabase('backupentrega');
+salvarLocal();
+processarFiltros('entregacartao');
+processarFiltros('backupentrega');
+const msgOk=`<b>${n}</b> registro(s) enviados para o Backup`+(ins?` e gravados no Supabase (<b>${ins}</b>)`:'')+'. As linhas continuam na Entrega de Cartão.';
+const msgErr=erros.length?` <b>Aviso:</b> ${esc(erros[0])}`:'';
+mostrarAviso('ecAviso',msgOk+msgErr,erros.length&&!ins?'erro':'ok');
+mudarAba('backupentrega');
+mostrarAviso('beAviso',msgOk+msgErr,erros.length&&!ins?'erro':'ok');
+}
+function exportarBackupExcel(){
+const est=abas.backupentrega;if(!est.listaOriginal.length){alert('Backup vazio.');return;}
+if(typeof XLSX==='undefined'){alert('Excel não carregou.');return;}
+const cols=est.colunas.filter(c=>c.tipo==='texto');
+const rows=est.listaFiltrada.map(item=>{const o={};cols.forEach(c=>{const t=valorCelula(item,c);o[c.label]=t==='—'?'':t;});return o;});
+const ws=XLSX.utils.json_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Backup Entrega');XLSX.writeFile(wb,'backup_entrega_cartao_malote.xlsx');
+}
+
+/* ===== Supabase: entrega_cartao / backup_entrega_cartao ===== */
+function paraDB(item){
+const o={};
+CAMPOS_DB.forEach(k=>{let v=item[k];if(v===undefined||v===null||String(v).trim()==='')v=null;else v=String(v).trim();o[k]=v;});
+o.data_entrega=paraISO(item.data_entrega);
+return o;
+}
+async function salvarItemSupabase(aba,item){
+if(!supabaseClient)return{ok:false,msg:'Supabase não configurado (SUPABASE_URL / SUPABASE_ANON_KEY).'};
+const t=tabelaDaAba(aba),obj=paraDB(item);
+try{
+if(item.db_id!=null){
+const{data,error}=await supabaseClient.from(t).update(obj).eq('id',item.db_id).select('id');
+if(error)throw error;
+if(!data||!data.length)return{ok:false,msg:'Nenhuma linha foi atualizada em "'+t+'" (registro não existe mais ou sem permissão).'};
+return{ok:true};
+}
+const{data,error}=await supabaseClient.from(t).insert(obj).select('id');
+if(error)throw error;
+item.db_id=data&&data[0]?data[0].id:null;
+return{ok:true};
+}catch(e){return{ok:false,msg:e.message||String(e)};}
+}
+async function salvarTodosSupabase(aba){
+const est=abas[aba];const av=avisoDaAba(aba);const t=tabelaDaAba(aba);
+if(!supabaseClient){alert('Configure SUPABASE_URL e SUPABASE_ANON_KEY no script.');return;}
+const alvo=est.idsSelecionados.size?est.listaOriginal.filter(i=>est.idsSelecionados.has(String(i.id))):est.listaOriginal;
+if(!alvo.length){alert('Nada para salvar.');return;}
+if(!confirm(`Gravar ${alvo.length} linha(s) na tabela "${t}" do Supabase?\n(${est.idsSelecionados.size?'apenas as selecionadas':'todas as linhas da aba'}; as já gravadas serão sobrescritas)`))return;
+const novos=alvo.filter(i=>i.db_id==null),exist=alvo.filter(i=>i.db_id!=null);
+let ins=0,upd=0;const erros=[];
+for(let i=0;i<novos.length;i+=500){
+const lote=novos.slice(i,i+500);
+mostrarAviso(av,`Gravando novos... ${Math.min(i+500,novos.length)}/${novos.length}`,'info');
+const{data,error}=await supabaseClient.from(t).insert(lote.map(paraDB)).select('id');
+if(error){erros.push(error.message);break;}
+if(data&&data.length===lote.length){lote.forEach((it,j)=>{it.db_id=data[j].id;});ins+=lote.length;}
+else{erros.push('O Supabase não devolveu os ids das linhas inseridas (verifique a permissão de SELECT/RLS).');break;}
+}
+if(!erros.length){
+for(let i=0;i<exist.length;i+=15){
+const lote=exist.slice(i,i+15);
+mostrarAviso(av,`Atualizando existentes... ${Math.min(i+15,exist.length)}/${exist.length}`,'info');
+const res=await Promise.all(lote.map(it=>salvarItemSupabase(aba,it)));
+res.forEach(r=>{if(r.ok)upd++;else erros.push(r.msg);});
+}
+}
+salvarLocal();processarFiltros(aba);
+mostrarAviso(av,`Supabase (${t}): <b>${ins}</b> inserida(s), <b>${upd}</b> atualizada(s)`+(erros.length?`. <b>Erro:</b> ${esc(erros[0])}`:'.'),erros.length?'erro':'ok');
+}
+async function carregarListaSupabase(aba){
+const est=abas[aba];const av=avisoDaAba(aba);const t=tabelaDaAba(aba);
+if(!supabaseClient){alert('Configure SUPABASE_URL e SUPABASE_ANON_KEY no script.');return;}
+mostrarAviso(av,`Carregando "${t}"...`,'info');
+try{
+const dados=await fetchTudo(t,'id');
+const pref=aba==='backupentrega'?'be':'ec';
+const doBanco=dados.map(r=>{const o={id:uid(pref),db_id:r.id,status_busca:null,status_backup:aba==='backupentrega'?'enviado':'pendente'};CAMPOS_DB.forEach(k=>{o[k]=r[k]??null;});return o;});
+if(aba==='backupentrega'){
+est.listaOriginal=doBanco;
+}else{
+const locais=est.listaOriginal.filter(i=>i.db_id==null);
+est.listaOriginal=locais.concat(doBanco);
+}
+est.idsSelecionados.clear();
+salvarLocal();processarFiltros(aba);
+const extra=(aba!=='backupentrega'&&est.listaOriginal.length>doBanco.length)?` (+ ${est.listaOriginal.length-doBanco.length} local(is))`:'';
+mostrarAviso(av,`<b>${doBanco.length.toLocaleString('pt-BR')}</b> registro(s) carregados de "${t}"${extra}.`,'ok');
+}catch(e){const msg=String(e.message||e);if(!/schema cache|cache do esquema|schema.*cache/i.test(msg)){mostrarAviso(av,'Erro ao carregar: '+esc(msg),'erro');}else{console.warn('[v0] Falha de cache do esquema ignorada:',msg);}}
+}
+async function excluirLinhasDB(aba,itens){
+const ids=itens.filter(i=>i.db_id!=null).map(i=>i.db_id);
+if(!ids.length)return{ok:true,n:0};
+if(!supabaseClient)return{ok:false,msg:'Supabase não configurado: as linhas já gravadas não podem ser removidas do banco.'};
+try{
+for(let i=0;i<ids.length;i+=200){
+const{error}=await supabaseClient.from(tabelaDaAba(aba)).delete().in('id',ids.slice(i,i+200));
+if(error)throw error;
+}
+return{ok:true,n:ids.length};
+}catch(e){return{ok:false,msg:e.message||String(e)};}
+}
+async function excluirLinha(aba,id){
+const est=abas[aba];const item=est.listaOriginal.find(x=>String(x.id)===String(id));if(!item)return;
+const noBanco=item.db_id!=null;
+if(!confirm(`Excluir a linha do cartão ${item.cartao||''}?`+(noBanco?`\nEla também será removida da tabela "${tabelaDaAba(aba)}" no Supabase.`:'')))return;
+const r=await excluirLinhasDB(aba,[item]);
+if(!r.ok){mostrarAviso(avisoDaAba(aba),'Não foi possível excluir no Supabase: '+esc(r.msg),'erro');return;}
+est.listaOriginal=est.listaOriginal.filter(x=>String(x.id)!==String(id));est.idsSelecionados.delete(String(id));
+salvarLocal();processarFiltros(aba);
+mostrarAviso(avisoDaAba(aba),'Linha excluída'+(noBanco?' (inclusive no Supabase).':'.'),'ok');
+}
+async function excluirSelecionadas(aba){
+const est=abas[aba];const ids=[...est.idsSelecionados];
+if(!ids.length){alert('Selecione linhas.');return;}
+const set=new Set(ids.map(String));const itens=est.listaOriginal.filter(x=>set.has(String(x.id)));
+const noBanco=itens.filter(i=>i.db_id!=null).length;
+if(!confirm(`Remover ${itens.length} linha(s)?`+(noBanco?`\n${noBanco} delas também serão removidas da tabela "${tabelaDaAba(aba)}" no Supabase.`:'')))return;
+const r=await excluirLinhasDB(aba,itens);
+if(!r.ok){mostrarAviso(avisoDaAba(aba),'Não foi possível excluir no Supabase: '+esc(r.msg),'erro');return;}
+est.listaOriginal=est.listaOriginal.filter(x=>!set.has(String(x.id)));est.idsSelecionados.clear();
+salvarLocal();processarFiltros(aba);
+mostrarAviso(avisoDaAba(aba),`<b>${itens.length}</b> linha(s) excluída(s)`+(noBanco?` (<b>${noBanco}</b> também no Supabase).`:'.'),'ok');
+}
+function limparAba(aba){
+if(!confirm('Limpar esta aba?\n(Só limpa a tela — NÃO apaga nada do Supabase. Para apagar do banco use a lixeira ou "Excluir selecionadas".)'))return;
+abas[aba].listaOriginal=[];abas[aba].listaFiltrada=[];abas[aba].idsSelecionados.clear();abas[aba].filtrosAtivos={};
+salvarLocal();construirCabecalho(aba);processarFiltros(aba);
+}
+
+/* ===== Formulário de edição ===== */
+function abrirEdicao(aba,id){
+const est=abas[aba];const item=est.listaOriginal.find(x=>String(x.id)===String(id));if(!item)return;
+edicaoAtual={aba,id:item.id};
+document.getElementById('modalTitulo').innerHTML='<i class="fa-solid fa-pen text-sky-400"></i> Editar registro — '+(aba==='backupentrega'?'Backup':'Entrega')+(item.cartao?' · Cartão '+esc(item.cartao):'');
+document.getElementById('modalCampos').innerHTML=COLUNAS_ENTREGA.filter(c=>c.tipo==='texto').map(c=>{
+const isData=c.key==='data_entrega';
+const val=isData?(paraISO(item[c.key])||''):(item[c.key]??'');
+return `<div><label class="block text-xs font-semibold mb-1">${esc(c.label)}</label><input type="${isData?'date':'text'}" data-campo="${c.key}" value="${esc(val)}" class="campo-edicao"></div>`;
+}).join('');
+document.getElementById('modalAviso').classList.add('hidden');
+const btn=document.getElementById('btnSalvarEdicao');btn.disabled=false;btn.style.opacity='1';
+document.getElementById('modalEdicao').style.display='flex';
+}
+function fecharEdicao(){document.getElementById('modalEdicao').style.display='none';edicaoAtual=null;}
+async function salvarEdicao(){
+if(!edicaoAtual)return;
+const{aba,id}=edicaoAtual;const est=abas[aba];const item=est.listaOriginal.find(x=>String(x.id)===String(id));if(!item){fecharEdicao();return;}
+document.querySelectorAll('#modalCampos [data-campo]').forEach(inp=>{
+const k=inp.dataset.campo;let v=inp.value.trim();
+if(k==='cartao')v=soDigitos(v)||v;
+item[k]=v===''?null:v;
+});
+const btn=document.getElementById('btnSalvarEdicao');btn.disabled=true;btn.style.opacity='.6';
+mostrarAviso('modalAviso','Gravando no Supabase...','info');
+const r=await salvarItemSupabase(aba,item);
+salvarLocal();processarFiltros(aba);
+if(r.ok){fecharEdicao();mostrarAviso(avisoDaAba(aba),'Edição salva e gravada no Supabase ('+esc(tabelaDaAba(aba))+').','ok');}
+else{btn.disabled=false;btn.style.opacity='1';mostrarAviso('modalAviso','Salvo na tela, mas <b>não gravou no Supabase</b>: '+esc(r.msg),'erro');}
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&edicaoAtual)fecharEdicao();});
+
+/* ===== Retorno 439 ===== */
+function lerArquivoRetorno439(arquivo){if(!arquivo)return;const reader=new FileReader();reader.onload=function(e){const texto=e.target.result;const linhas=texto.split(/\r?\n/).filter(l=>l.length>0);const regs=[];let dataArq=null;linhas.forEach((linha,idx)=>{if(idx===0){const m=linha.match(/(\d{2})(\d{2})(\d{4})/);if(m)dataArq=m[1]+'/'+m[2]+'/'+m[3];}if(linha.length<40)return;const cartaoMatch=linha.match(/4\d{15}/);if(!cartaoMatch)return;const cartao=cartaoMatch[0];const cpfMatch=linha.match(/\b(\d{11})\b/);let nome='';const nomeMatch=linha.match(/[A-ZÁÉÍÓÚÃÕÂÊÎÔÛÇ][A-ZÁÉÍÓÚÃÕÂÊÎÔÛÇ\s]{9,60}/);if(nomeMatch)nome=nomeMatch[0].trim().replace(/\s+/g,' ');regs.push({id:uid('r439'),programa:null,nte:null,centro_custo:null,id_custo:null,nome_personalizado:null,nome_completo:nome||null,cpf:cpfMatch?cpfMatch[1]:null,cartao,situacao:null,valor_limite:null});});abas.retorno439.listaOriginal=regs;document.getElementById('r439NomeArquivo').textContent=arquivo.name;document.getElementById('r439DataArquivo').textContent=dataArq||'—';construirCabecalho('retorno439');processarFiltros('retorno439');mostrarAviso('r439Aviso',regs.length?`<b>${regs.length}</b> registro(s) lidos.`:'Nenhum cartão identificado.',regs.length?'ok':'erro');};reader.readAsText(arquivo,'ISO-8859-1');}
+function carregarRetorno439Supabase(){
+return unica('r439',async()=>{
+if(!supabaseClient){mostrarAviso('r439Aviso','Configure SUPABASE_URL e SUPABASE_ANON_KEY no script.','erro');return false;}
+mostrarAviso('r439Aviso','Carregando do Supabase...','info');
+try{
+const todos=await fetchTudo(TABELA_RETORNO_439,null);
+abas.retorno439.listaOriginal=todos.map(r=>({
+id:r.id!=null?r.id:uid('r439'),
+programa:pick(r,['programa']),nte:pick(r,['nte']),
+centro_custo:pick(r,['centro_custo','municipio']),id_custo:pick(r,['id_custo']),
+nome_personalizado:pick(r,['nome_personalizado']),
+nome_completo:pick(r,['nome_completo','nome','nome_portador','portador']),
+cpf:pick(r,['cpf']),cartao:pick(r,['cartao','numero_cartao','num_cartao']),
+situacao:pick(r,['situacao']),valor_limite:pick(r,['valor_limite'])
+}));
+document.getElementById('r439NomeArquivo').textContent='Supabase · '+TABELA_RETORNO_439;
+document.getElementById('r439DataArquivo').textContent=dataHojeBR();
+construirCabecalho('retorno439');processarFiltros('retorno439');
+mostrarAviso('r439Aviso',`<b>${todos.length.toLocaleString('pt-BR')}</b> registro(s) carregados do Supabase.`,'ok');
+return true;
+}catch(err){mostrarAviso('r439Aviso','Erro ao carregar: '+esc(err.message||String(err)),'erro');return false;}
+});
+}
+function limparPainel439(){if(!confirm('Limpar Retorno 439?'))return;abas.retorno439.listaOriginal=[];abas.retorno439.listaFiltrada=[];document.getElementById('r439NomeArquivo').textContent='Nenhum';document.getElementById('r439DataArquivo').textContent='—';document.getElementById('r439Arquivo').value='';processarFiltros('retorno439');document.getElementById('r439Aviso').classList.add('hidden');}
+
+/* ===== Sistema Escolar ===== */
+function mapearSE(r){
+const m={};for(const k of Object.keys(r))m[norm(k)]=r[k];
+const o={id:r.id!=null?r.id:uid('se')};
+for(const[campo,aliases]of Object.entries(ALIAS_SE)){let v=null;for(const a of aliases){const x=m[a];if(x!=null&&String(x).trim()!==''){v=x;break;}}o[campo]=v;}
+return o;
+}
+function carregarSistemaEscolarSupabase(){
+return unica('se',async()=>{
+if(!supabaseClient){mostrarAviso('seAviso','Configure SUPABASE_URL e SUPABASE_ANON_KEY no script.','erro');return false;}
+mostrarAviso('seAviso','Carregando do Supabase...','info');
+try{
+const todos=await fetchTudo(TABELA_SISTEMA_ESCOLAR,null);
+abas.sistemaescolar.listaOriginal=todos.map(mapearSE);
+document.getElementById('seOrigem').textContent='Supabase · '+TABELA_SISTEMA_ESCOLAR;
+construirCabecalho('sistemaescolar');processarFiltros('sistemaescolar');
+mostrarAviso('seAviso',`<b>${todos.length.toLocaleString('pt-BR')}</b> registro(s) carregados do Supabase.`,todos.length?'ok':'alerta');
+return true;
+}catch(err){mostrarAviso('seAviso','Erro ao carregar: '+esc(err.message||String(err)),'erro');return false;}
+});
+}
+function limparPainelSE(){if(!confirm('Limpar Sistema Escolar da tela? (não apaga do Supabase)'))return;abas.sistemaescolar.listaOriginal=[];abas.sistemaescolar.listaFiltrada=[];document.getElementById('seOrigem').textContent='Nenhum';processarFiltros('sistemaescolar');document.getElementById('seAviso').classList.add('hidden');}
+
+/* ===== Folha de Impressão ===== */
+function nomeProgramaCompleto(p){
+const original=String(p??'').trim();
+const s=original.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+if(!s)return '';
+  if(s.includes('PNAE'))return 'PNAE';
+  if(s.includes('FAED')&&/(MANUT|MANUTE|MANUTEN)/.test(s))return 'FAED MANUTENÇÃO';
+  if(s.includes('FAED')||s.includes('ALIM'))return 'FAED ALIMENTAÇÃO';
+  if(s.includes('PENAR'))return 'PENAR';
+  return original;
+}
+function limparFolhaImpressao(){
+document.getElementById('areaFolhas').innerHTML='';
+document.getElementById('fiStatTotal').textContent='0';
+const badge=document.getElementById('badgeFolha');
+if(badge)badge.classList.add('hidden');
+const av=document.getElementById('fiAviso');
+if(av)av.classList.add('hidden');
+}
+function gerarFolhaImpressao(abaOrigem='entregacartao'){
+const est=abas[abaOrigem]||abas.entregacartao;
+if(!est.listaOriginal.length){alert(abaOrigem==='backupentrega'?'Não há cartões no Backup.':'Não há cartões na Entrega de Cartão.');return;}
+let itens;
+if(est.idsSelecionados.size){
+itens=est.listaOriginal.filter(i=>est.idsSelecionados.has(String(i.id)));
+}else{
+itens=est.listaOriginal.slice();
+}
+if(!itens.length){alert('Nenhuma linha selecionada.');return;}
+itens.sort((a,b)=>{
+const na=String(a.nte??''),nb=String(b.nte??'');
+if(na!==nb)return na.localeCompare(nb,'pt-BR');
+const ma=String(a.municipio??''),mb=String(b.municipio??'');
+if(ma!==mb)return ma.localeCompare(mb,'pt-BR');
+return String(a.unidade_escolar??'').localeCompare(String(b.unidade_escolar??''),'pt-BR');
+});
+const ROWS_PER_PAGE=18;
+const totalPaginas=Math.ceil(itens.length/ROWS_PER_PAGE)||1;
+const area=document.getElementById('areaFolhas');
+area.innerHTML='';
+const hoje=dataHojeBR();
+const [dia,mes,ano]=hoje.split('/');
+const meses=['','janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const mesNome=meses[parseInt(mes,10)]||mes;
+for(let p=0;p<totalPaginas;p++){
+const fatia=itens.slice(p*ROWS_PER_PAGE,(p+1)*ROWS_PER_PAGE);
+let rowsHtml='';
+fatia.forEach((item,idx)=>{
+const n=p*ROWS_PER_PAGE+idx+1;
+const nte=esc(item.nte??'');
+const mun=esc(item.municipio??'');
+const cod=esc(item.cod_sec??'');
+const escola=esc(item.unidade_escolar??'');
+const dir=esc(item.diretor_a??'');
+const cart=esc(item.cartao??'');
+const prog=esc(nomeProgramaCompleto(item.programa));
+rowsHtml+=`<tr>
+<td style="width:8mm;text-align:center">${n}</td>
+<td class="esq" style="width:12mm">${nte}</td>
+<td class="esq" style="width:38mm">${mun}</td>
+<td style="width:18mm">${cod}</td>
+<td class="esq" style="width:70mm">${escola}</td>
+<td class="esq" style="width:55mm">${dir}</td>
+<td style="width:32mm">${cart}</td>
+<td class="esq" style="width:32mm">${prog}</td>
+</tr>`;
+});
+const folha=`
+<div class="folha">
+<div class="folha-topo">
+<div class="folha-orgao">
+Diretoria de Recursos Informacionais da Rede Escolar - DRIRE<br>
+Coordenação de Descentralização Financeira – CDF
+</div>
+<div class="folha-logo" style="right:2mm;left:auto;font-family:Arial,sans-serif;font-weight:800;line-height:1.05;text-align:center;color:#000;width:68mm">
+<span style="font-size:8.5pt;font-weight:700;display:block;white-space:nowrap">GOVERNO DO ESTADO</span>
+<span style="display:block;font-size:21pt;line-height:.95;letter-spacing:0;font-weight:900;margin:1mm 0 1.2mm" aria-label="Bahia">
+<span style="color:#111">B</span><span style="color:#000">A</span><span style="color:#000">H</span><span style="color:#000">I</span><span style="color:#000">A</span>
+</span>
+<span style="font-size:7.5pt;font-weight:700;display:block;white-space:nowrap">SECRETARIA DA EDUCAÇÃO</span>
+</div>
+</div>
+<table class="folha-tabela">
+<thead>
+<tr>
+<th style="width:8mm">N</th>
+<th style="width:12mm">NTE</th>
+<th style="width:38mm">MUNICÍPIO</th>
+<th style="width:18mm">COD.SEC</th>
+<th style="width:70mm">UNIDADE ESCOLAR</th>
+<th style="width:55mm">DIRETOR(A)</th>
+<th style="width:32mm">Nº CARTÃO</th>
+<th style="width:32mm">PROGRAMA</th>
+</tr>
+</thead>
+<tbody>${rowsHtml}</tbody>
+</table>
+<div class="folha-rodape">
+<p class="p1">Trata-se de relação contendo cartões FAED que deverão ser entregues aos gestores das unidades escolares listadas.</p>
+<p class="p2">Após assinatura do recebimento pelo Diretor do NTE, favor devolver o documento original a Secretaria da Educação do Estado da Bahia - SEC</p>
+<p class="data">Salvador, ${dia} de ${mesNome} de ${ano}</p>
+<div class="linha"></div>
+<p class="assin">Assinatura do recebido(a) Matrícula: ______</p>
+</div>
+</div>`;
+area.insertAdjacentHTML('beforeend',folha);
+}
+document.getElementById('fiStatTotal').textContent=itens.length.toLocaleString('pt-BR');
+const badge=document.getElementById('badgeFolha');
+if(badge){badge.textContent=itens.length;badge.classList.remove('hidden');}
+mostrarAviso('fiAviso',`<b>${itens.length}</b> linha(s) em <b>${totalPaginas}</b> folha(s). Use <b>Imprimir / PDF</b> (Ctrl+P).`,'ok');
+mudarAba('folhaimpressao');
+}
+
+/* ===== Persistência local (rascunho do navegador) ===== */
+function salvarLocal(){try{localStorage.setItem('ec_entrega_v3',JSON.stringify(abas.entregacartao.listaOriginal));localStorage.setItem('ec_backup_v3',JSON.stringify(abas.backupentrega.listaOriginal));}catch(e){}}
+function carregarLocal(){try{const e=localStorage.getItem('ec_entrega_v3')||localStorage.getItem('ec_entrega_v2');const b=localStorage.getItem('ec_backup_v3')||localStorage.getItem('ec_backup_v2');if(e)abas.entregacartao.listaOriginal=JSON.parse(e);if(b)abas.backupentrega.listaOriginal=JSON.parse(b);}catch(e){}}
+
+document.addEventListener('DOMContentLoaded',()=>{
+aplicarTema(localStorage.getItem('temaPainel')||'azul');
+if(localStorage.getItem('menuLateralRecolhido')==='1'){document.body.classList.add('menu-recolhido');document.getElementById('iconeMenu').className='fa-solid fa-angles-right';}
+carregarLocal();
+mudarAba('coletar');
+if(supabaseClient){
+carregarRetorno439Supabase();
+carregarSistemaEscolarSupabase();
+carregarListaSupabase('backupentrega');
+}
+});
+</script></body></html>
